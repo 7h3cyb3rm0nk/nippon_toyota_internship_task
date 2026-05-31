@@ -48,7 +48,7 @@ export default function RootLayout({
     // Simulate initial loading time, e.g., fetching user data or initial content
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 2000); // Show loader for 2 seconds
+    }, 4000); // Show loader for 4 seconds
 
     return () => clearTimeout(timer);
   }, []);
@@ -59,7 +59,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased ${theme === 'dark' ? 'dark' : ''}`}
     >
       <body className="min-h-full flex flex-col">
-        {isLoading && <ThreeCarLoader isLoading={isLoading} />} {/* Conditionally render the loader */}
+        <ThreeCarLoader isLoading={isLoading} />
         {children}
       </body>
     </html>

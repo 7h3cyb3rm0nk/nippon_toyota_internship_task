@@ -1,68 +1,40 @@
-create table profiles (
-  id uuid references auth.users on delete cascade primary key,
-  role text not null check (role in ('admin', 'sales_officer'))
-);
+-- WARNING: This schema is for context only and is not meant to be run.
+-- Table order and constraints may not be valid for execution.
 
-create table car_models (
-  id uuid primary key default gen_random_uuid(),
-  name text not null,
+CREATE TABLE public.car_models (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  name text NOT NULL,
   base_suffix text,
   variant text,
-  created_at timestamptz default now()
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT car_models_pkey PRIMARY KEY (id)
 );
-
-create table slab_config (
-  id uuid primary key default gen_random_uuid(),
-  min_cars int not null,
-  max_cars int,
-  incentive_per_car numeric not null,
-  created_at timestamptz default now()
+CREATE TABLE public.profiles (
+  id uuid NOT NULL,
+  role text NOT NULL CHECK (role = ANY (ARRAY['admin'::text, 'sales_officer'::text])),
+  full_name text,
+  CONSTRAINT profiles_pkey PRIMARY KEY (id),
+  CONSTRAINT profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id)
 );
-
-create table sales_logs (
-  id uuid primary key default gen_random_uuid(),
-  officer_id uuid references profiles(id) on delete cascade,
-  model_id uuid references car_models(id) on delete cascade,
-  month int not null check (month between 1 and 12),
-  year int not null,
-  quantity_sold int not null default 0,
-  created_at timestamptz default now(),
-  unique(officer_id, model_id, month, year)
+CREATE TABLE public.sales_logs (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  officer_id uuid,
+  model_id uuid,
+  month integer NOT NULL CHECK (month >= 1 AND month <= 12),
+  year integer NOT NULL,
+  quantity_sold integer NOT NULL DEFAULT 0,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT sales_logs_pkey PRIMARY KEY (id),
+  CONSTRAINT sales_logs_officer_id_fkey FOREIGN KEY (officer_id) REFERENCES public.profiles(id),
+  CONSTRAINT sales_logs_model_id_fkey FOREIGN KEY (model_id) REFERENCES public.car_models(id)
 );
-
--- RLS
-alter table sales_logs enable row level security;
-alter table car_models enable row level security;
-alter table slab_config enable row level security;
-alter table profiles enable row level security;
-
-create policy "officer select" on sales_logs
-  for select to authenticated
-  using ((select auth.uid()) = officer_id);
-
-create policy "officer insert" on sales_logs
-  for insert to authenticated
-  with check ((select auth.uid()) = officer_id);
-
-create policy "officer update" on sales_logs
-  for update to authenticated
-  using ((select auth.uid()) = officer_id)
-  with check ((select auth.uid()) = officer_id);
-
-create policy "own profile" on profiles
-  for select to authenticated
-  using (id = (select auth.uid()));
-
-create policy "authenticated read cars" on car_models
-  for select to authenticated using (true);
-
-create policy "authenticated read slabs" on slab_config
-  for select to authenticated using (true);
-
-create policy "admin write cars" on car_models
-  for all to authenticated
-  using ((select role from profiles where id = (select auth.uid())) = 'admin');
-
-create policy "admin write slabs" on slab_config
-  for all to authenticated
-  using ((select role from profiles where id = (select auth.uid())) = 'admin');
+CREATE TABLE public.slab_config (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  min_cars integer NOT NULL,
+  max_cars integer,
+  incentive_per_car numeric NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  model_id uuid NOT NULL,
+  CONSTRAINT slab_config_pkey PRIMARY KEY (id),
+  CONSTRAINT slab_config_model_id_fkey FOREIGN KEY (model_id) REFERENCES public.car_models(id)
+);
