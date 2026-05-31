@@ -49,23 +49,35 @@ export default function RegisterPage() {
           <CardTitle className="text-2xl font-bold tracking-tighter text-center uppercase">Create Account</CardTitle>
         </CardHeader>
         <CardContent className="p-8 space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="fullName">Full Name</Label>
-            <Input id="fullName" value={fullName} onChange={e => setFullName(e.target.value)} placeholder="John Doe" />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="name@company.com" />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" />
-          </div>
-          {error && <p className="text-sm font-medium text-destructive">{error}</p>}
-          <Button className="w-full rounded-full gap-2" onClick={handleRegister} disabled={loading}>
-            <UserPlus className="size-4" />
-            {loading ? 'Creating...' : 'Register'}
-          </Button>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleRegister();
+            }}
+            className="space-y-6"
+          >
+            <div className="space-y-2">
+              <Label htmlFor="fullName">Full Name</Label>
+              <Input id="fullName" value={fullName} onChange={e => setFullName(e.target.value)} placeholder="John Doe" required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="name@company.com" required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required />
+            </div>
+            {error && <p className="text-sm font-medium text-destructive">{error}</p>}
+            <Button 
+              type="submit" 
+              className="w-full rounded-full gap-2" 
+              disabled={loading || !fullName || !email || !password}
+            >
+              <UserPlus className="size-4" />
+              {loading ? 'Creating...' : 'Register'}
+            </Button>
+          </form>
         </CardContent>
       </Card>
     </div>
