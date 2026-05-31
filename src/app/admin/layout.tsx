@@ -1,7 +1,12 @@
-import { LayoutDashboard, Car, ShoppingCart, TableProperties, LogOut } from "lucide-react";
+"use client";
+
+import { LayoutDashboard, Car, ShoppingCart, TableProperties, LogOut, Menu, X } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const [isOpen, setIsOpen] = useState(false);
+
   const navItems = [
     { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
     { name: "Cars", href: "/admin/cars", icon: Car },
@@ -11,12 +16,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="min-h-screen bg-background bg-mesh">
-      <nav className="border-b border-border bg-card/80 backdrop-blur-sm px-6 py-4 flex items-center justify-between sticky top-0 z-10">
+      <nav className="border-b border-border bg-card/80 backdrop-blur-sm px-6 py-4 flex items-center justify-between sticky top-0 z-50">
         <span className="font-bold text-primary text-xl tracking-tighter flex items-center gap-2">
           <Car className="size-6 text-primary" />
           NIPPON TOYOTA
         </span>
-        <div className="flex items-center gap-2">
+
+        {/* Desktop Nav */}
+        <div className="hidden md:flex items-center gap-2">
           {navItems.map((item) => (
             <Link 
               key={item.name} 
@@ -32,7 +39,34 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             Logout
           </a>
         </div>
+
+        {/* Mobile Hamburger */}
+        <button className="md:hidden p-2" onClick={() => setIsOpen(!isOpen)}>
+          {isOpen ? <X className="size-6" /> : <Menu className="size-6" />}
+        </button>
       </nav>
+
+      {/* Mobile Menu */}
+      {isOpen && (
+        <div className="md:hidden absolute w-full bg-card/95 backdrop-blur-md border-b border-border p-6 flex flex-col gap-4 z-40">
+          {navItems.map((item) => (
+            <Link 
+              key={item.name} 
+              href={item.href} 
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-foreground text-base bg-secondary/50"
+            >
+              <item.icon className="size-5" />
+              {item.name}
+            </Link>
+          ))}
+          <a href="/api/auth/logout" className="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-base text-destructive bg-destructive/10">
+            <LogOut className="size-5" />
+            Logout
+          </a>
+        </div>
+      )}
+
       <main className="p-6">{children}</main>
     </div>
   )

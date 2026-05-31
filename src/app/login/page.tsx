@@ -91,6 +91,22 @@ export default function LoginPage() {
               {loading ? 'Authenticating...' : 'Sign In'}
             </Button>
           </form>
+          
+          <div className="mt-6 rounded-lg border border-border bg-muted/50 p-4 text-xs text-muted-foreground space-y-2">
+            <p className="font-semibold text-foreground">Test Credentials:</p>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <p className="font-medium text-foreground">Admin:</p>
+                <p>admin@test.com</p>
+                <p>Test123!</p>
+              </div>
+              <div>
+                <p className="font-medium text-foreground">Officer:</p>
+                <p>officer@test.com</p>
+                <p>Test123!</p>
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>
