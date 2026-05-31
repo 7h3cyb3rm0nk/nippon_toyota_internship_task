@@ -16,6 +16,7 @@ type Car = {
 
 export default function OfficerPage() {
   const now = new Date()
+
   const [month, setMonth] = useState(now.getMonth() + 1)
   const [year, setYear] = useState(now.getFullYear())
   const [cars, setCars] = useState<Car[]>([])
@@ -31,6 +32,7 @@ export default function OfficerPage() {
       fetch('/api/slabs'),
       fetch(`/api/sales?month=${month}&year=${year}`),
     ])
+
     const carsData = await carsRes.json()
     const slabsData = await slabsRes.json()
     const salesData = await salesRes.json()
@@ -39,65 +41,95 @@ export default function OfficerPage() {
     setSlabs(slabsData)
 
     const q: Record<string, number> = {}
+
     carsData.forEach((c: Car) => {
       const log = salesData.find((s: any) => s.model_id === c.id)
       q[c.id] = log ? log.quantity_sold : 0
     })
+
     setQuantities(q)
+
     const { createClient } = await import('@/lib/supabase/client')
     const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
     if (user) {
       const { data: profile } = await supabase
         .from('profiles')
         .select('full_name')
         .eq('id', user.id)
         .single()
-      if (profile?.full_name) setOfficerName(profile.full_name)
+
+      if (profile?.full_name) {
+        setOfficerName(profile.full_name)
+      }
     }
   }
 
-  useEffect(() => { fetchData() }, [month, year])
+  useEffect(() => {
+    fetchData()
+  }, [month, year])
 
-  const entries: ModelEntry[] = cars.map(c => ({
-    model_id: c.id,
-    model_name: c.name,
-    quantity: quantities[c.id] ?? 0,
+  const entries: ModelEntry[] = cars.map(car => ({
+    model_id: car.id,
+    model_name: car.name,
+    quantity: quantities[car.id] ?? 0,
   }))
 
   const breakdown = calculateIncentive(entries, slabs)
 
   async function handleSave() {
     setSaving(true)
+
     await Promise.all(
-      cars.map(c =>
+      cars.map(car =>
         fetch('/api/sales', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+          },
           body: JSON.stringify({
-            model_id: c.id,
+            model_id: car.id,
             month,
             year,
-            quantity_sold: quantities[c.id] ?? 0,
+            quantity_sold: quantities[car.id] ?? 0,
           }),
         })
       )
     )
+
     setSaving(false)
     setSaved(true)
+
     setTimeout(() => setSaved(false), 2000)
   }
 
   const months = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
   ]
 
   return (
     <div className="space-y-6">
       {officerName && (
-        <p className="text-muted-foreground text-sm">Welcome, {officerName}</p>
+        <p className="text-muted-foreground text-sm">
+          Welcome, {officerName}
+        </p>
       )}
+
       <div className="flex gap-4 items-center">
         <select
           className="border rounded px-3 py-2 bg-background text-foreground"
@@ -105,16 +137,24 @@ export default function OfficerPage() {
           onChange={e => setMonth(Number(e.target.value))}
         >
           {months.map((m, i) => (
-            <option key={i} value={i + 1}>{m}</option>
+            <option key={i} value={i + 1}>
+              {m}
+            </option>
           ))}
         </select>
+
         <select
           className="border rounded px-3 py-2 bg-background text-foreground"
           value={year}
           onChange={e => setYear(Number(e.target.value))}
         >
-          {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i).map(y => (
-            <option key={y} value={y}>{y}</option>
+          {Array.from(
+            { length: 5 },
+            (_, i) => new Date().getFullYear() - 2 + i
+          ).map(y => (
+            <option key={y} value={y}>
+              {y}
+            </option>
           ))}
         </select>
       </div>
@@ -124,27 +164,52 @@ export default function OfficerPage() {
           <CardHeader>
             <CardTitle>Sales Entry</CardTitle>
           </CardHeader>
+
           <CardContent className="space-y-4">
             {cars.length === 0 ? (
-              <p className="text-muted-foreground text-sm">No car models configured yet. Ask your admin.</p>
-            ) : cars.map(car => (
-              <div key={car.id} className="flex items-center justify-between gap-4">
-                <span className="text-sm">{car.name} {car.variant ?? ''}</span>
-                <Input
-                  type="number"
-                  min={0}
-                  className="w-24"
-                  value={quantities[car.id] ?? 0}
-                  onChange={e => {
-                    const val = parseInt(e.target.value)
-                    if (isNaN(val) || val < 0) return
-                    setQuantities(prev => ({ ...prev, [car.id]: val }))
-                  }}
-                />
-              </div>
-            ))}
-            <Button className="w-full mt-4" onClick={handleSave} disabled={saving}>
-              {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Entries'}
+              <p className="text-muted-foreground text-sm">
+                No car models configured yet. Ask your admin.
+              </p>
+            ) : (
+              cars.map(car => (
+                <div
+                  key={car.id}
+                  className="flex items-center justify-between gap-4"
+                >
+                  <span className="text-sm">
+                    {car.name} {car.variant ?? ''}
+                  </span>
+
+                  <Input
+                    type="number"
+                    min={0}
+                    className="w-24"
+                    value={quantities[car.id] ?? 0}
+                    onChange={e => {
+                      const val = parseInt(e.target.value)
+
+                      if (isNaN(val) || val < 0) return
+
+                      setQuantities(prev => ({
+                        ...prev,
+                        [car.id]: val,
+                      }))
+                    }}
+                  />
+                </div>
+              ))
+            )}
+
+            <Button
+              className="w-full mt-4"
+              onClick={handleSave}
+              disabled={saving}
+            >
+              {saving
+                ? 'Saving...'
+                : saved
+                  ? 'Saved!'
+                  : 'Save Entries'}
             </Button>
           </CardContent>
         </Card>
@@ -153,42 +218,92 @@ export default function OfficerPage() {
           <CardHeader>
             <CardTitle>Incentive Summary</CardTitle>
           </CardHeader>
+
           <CardContent className="space-y-4">
-            {/* Per model breakdown */}
-            {cars.filter(c => (quantities[c.id] ?? 0) > 0).map(car => (
-              <div key={car.id} className="flex justify-between text-sm">
-                <span className="text-muted-foreground">{car.name} {car.variant ?? ''}</span>
-                <span>{quantities[car.id]} car{quantities[car.id] !== 1 ? 's' : ''}</span>
+            {breakdown.models
+              .filter(model => model.quantity > 0)
+              .map(model => (
+                <div
+                  key={model.model_id}
+                  className="rounded-lg border p-4 space-y-2"
+                >
+                  <div className="flex justify-between">
+                    <span className="font-medium">
+                      {model.model_name}
+                    </span>
+
+                    <span>
+                      {model.quantity} car
+                      {model.quantity !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">
+                      Slab Hit
+                    </span>
+
+                    {model.slab_hit ? (
+                      <Badge>
+                        {model.slab_hit.min_cars}–
+                        {model.slab_hit.max_cars ?? '∞'}
+                      </Badge>
+                    ) : (
+                      <span className="text-muted-foreground">
+                        None
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">
+                      Incentive Rate
+                    </span>
+
+                    <span>
+                      ₹
+                      {Number(
+                        model.incentive_per_car
+                      ).toLocaleString('en-IN')}
+                      {' '}
+                      / car
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">
+                      Model Incentive
+                    </span>
+
+                    <span className="font-medium">
+                      ₹
+                      {model.total_incentive.toLocaleString('en-IN')}
+                    </span>
+                  </div>
+                </div>
+              ))}
+
+            <div className="border-t pt-4 space-y-3">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">
+                  Total Cars Sold
+                </span>
+
+                <span className="font-semibold">
+                  {breakdown.total_cars}
+                </span>
               </div>
-            ))}
 
-            {cars.filter(c => (quantities[c.id] ?? 0) > 0).length > 0 && (
-              <div className="border-t pt-2" />
-            )}
+              <div className="flex justify-between">
+                <span className="font-semibold">
+                  Total Payout
+                </span>
 
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Total Cars Sold</span>
-              <span className="font-semibold">{breakdown.total_cars}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Slab Hit</span>
-              {breakdown.slab_hit ? (
-                <Badge>
-                  {breakdown.slab_hit.min_cars}–{breakdown.slab_hit.max_cars ?? '∞'} cars
-                </Badge>
-              ) : (
-                <span className="text-muted-foreground">None</span>
-              )}
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Rate</span>
-              <span>₹{Number(breakdown.incentive_per_car).toLocaleString('en-IN')} / car</span>
-            </div>
-            <div className="border-t pt-4 flex justify-between">
-              <span className="font-semibold">Total Payout</span>
-              <span className="text-xl font-bold">
-                ₹{breakdown.total_incentive.toLocaleString('en-IN')}
-              </span>
+                <span className="text-xl font-bold">
+                  ₹
+                  {breakdown.total_incentive.toLocaleString('en-IN')}
+                </span>
+              </div>
             </div>
           </CardContent>
         </Card>
