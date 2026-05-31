@@ -57,5 +57,5 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ## Test Accounts
 | Role | Email | Password |
 |---|---|---|
-| Admin | admin@test.com | Test1234! |
-| Officer | officer@test.com | Test1234! |
+| Admin | admin@test.com | Test123! |
+| Officer | officer@test.com | Test123! |
