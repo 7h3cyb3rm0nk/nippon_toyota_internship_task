@@ -6,6 +6,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="flex gap-4">
           <a href="/admin/cars" className="text-sm hover:underline">Car Models</a>
           <a href="/admin/slabs" className="text-sm hover:underline">Slab Config</a>
+          <a href="/admin/sales" className="text-sm hover:underline">Sales</a>
           <a href="/api/auth/logout" className="text-sm hover:underline text-red-500">Logout</a>
         </div>
       </nav>

@@ -29,6 +29,28 @@ export default function SlabsPage() {
     const data = await res.json()
     setSlabs(data)
   }
+  function getSlabWarnings(slabs: Slab[]): string[] {
+    const warnings: string[] = []
+    const sorted = [...slabs].sort((a, b) => a.min_cars - b.min_cars)
+
+    for (let i = 0; i < sorted.length - 1; i++) {
+      const curr = sorted[i]
+      const next = sorted[i + 1]
+
+      if (curr.max_cars === null) {
+        warnings.push(`Slab ${curr.min_cars}+ has no max but is not the last slab`)
+        continue
+      }
+
+      if (next.min_cars <= curr.max_cars) {
+        warnings.push(`Slabs overlap: ${curr.min_cars}–${curr.max_cars} and ${next.min_cars}–${next.max_cars ?? '∞'}`)
+      } else if (next.min_cars > curr.max_cars + 1) {
+        warnings.push(`Gap between slabs: ${curr.max_cars + 1} to ${next.min_cars - 1} cars not covered`)
+      }
+    }
+
+    return warnings
+  }
 
   useEffect(() => { fetchSlabs() }, [])
 
@@ -85,6 +107,11 @@ export default function SlabsPage() {
         <Button onClick={openAdd}>+ Add Slab</Button>
       </CardHeader>
       <CardContent>
+        {getSlabWarnings(slabs).map((w, i) => (
+          <div key={i} className="mb-4 text-sm text-yellow-500 bg-yellow-500/10 border border-yellow-500/20 rounded px-3 py-2">
+            ⚠ {w}
+          </div>
+        ))}
         <Table>
           <TableHeader>
             <TableRow>

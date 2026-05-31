@@ -18,42 +18,50 @@ export async function proxy(request: NextRequest) {
     }
   )
 
-  const { data } = await supabase.auth.getClaims()
-  const user = data?.claims
+  const { data: { user } } = await supabase.auth.getUser()
 
-  if (user && pathname === '/login') {
+  if (!user) return response
+
+  // Only check role on login page and cross-role access
+  if (pathname === '/login') {
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
-      .eq('id', user.sub)
+      .eq('id', user.id)
       .single()
 
+    if (!profile) return response
+
     return NextResponse.redirect(
-      new URL(profile?.role === 'admin' ? '/admin' : '/officer', request.url)
+      new URL(profile.role === 'admin' ? '/admin/cars' : '/officer', request.url)
     )
   }
 
-  if (user && pathname.startsWith('/admin')) {
+  if (pathname.startsWith('/admin')) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
-      .eq('id', user.sub)
+      .eq('id', user.id)
       .single()
 
-    if (profile?.role !== 'admin') {
+    if (!profile) return response
+
+    if (profile.role !== 'admin') {
       return NextResponse.redirect(new URL('/officer', request.url))
     }
   }
 
-  if (user && pathname.startsWith('/officer')) {
+  if (pathname.startsWith('/officer')) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
-      .eq('id', user.sub)
+      .eq('id', user.id)
       .single()
 
-    if (profile?.role !== 'sales_officer') {
-      return NextResponse.redirect(new URL('/admin', request.url))
+    if (!profile) return response
+
+    if (profile.role !== 'sales_officer') {
+      return NextResponse.redirect(new URL('/admin/cars', request.url))
     }
   }
 
@@ -61,5 +69,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|api).*)'],
 }

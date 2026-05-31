@@ -23,6 +23,7 @@ export default function OfficerPage() {
   const [quantities, setQuantities] = useState<Record<string, number>>({})
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [officerName, setOfficerName] = useState('')
 
   async function fetchData() {
     const [carsRes, slabsRes, salesRes] = await Promise.all([
@@ -43,6 +44,17 @@ export default function OfficerPage() {
       q[c.id] = log ? log.quantity_sold : 0
     })
     setQuantities(q)
+    const { createClient } = await import('@/lib/supabase/client')
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('id', user.id)
+        .single()
+      if (profile?.full_name) setOfficerName(profile.full_name)
+    }
   }
 
   useEffect(() => { fetchData() }, [month, year])
@@ -83,6 +95,9 @@ export default function OfficerPage() {
 
   return (
     <div className="space-y-6">
+      {officerName && (
+        <p className="text-muted-foreground text-sm">Welcome, {officerName}</p>
+      )}
       <div className="flex gap-4 items-center">
         <select
           className="border rounded px-3 py-2 bg-background text-foreground"
@@ -98,7 +113,7 @@ export default function OfficerPage() {
           value={year}
           onChange={e => setYear(Number(e.target.value))}
         >
-          {[2023, 2024, 2025, 2026].map(y => (
+          {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i).map(y => (
             <option key={y} value={y}>{y}</option>
           ))}
         </select>
@@ -110,7 +125,9 @@ export default function OfficerPage() {
             <CardTitle>Sales Entry</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {cars.map(car => (
+            {cars.length === 0 ? (
+              <p className="text-muted-foreground text-sm">No car models configured yet. Ask your admin.</p>
+            ) : cars.map(car => (
               <div key={car.id} className="flex items-center justify-between gap-4">
                 <span className="text-sm">{car.name} {car.variant ?? ''}</span>
                 <Input
@@ -118,10 +135,11 @@ export default function OfficerPage() {
                   min={0}
                   className="w-24"
                   value={quantities[car.id] ?? 0}
-                  onChange={e => setQuantities(prev => ({
-                    ...prev,
-                    [car.id]: Math.max(0, parseInt(e.target.value) || 0)
-                  }))}
+                  onChange={e => {
+                    const val = parseInt(e.target.value)
+                    if (isNaN(val) || val < 0) return
+                    setQuantities(prev => ({ ...prev, [car.id]: val }))
+                  }}
                 />
               </div>
             ))}
@@ -136,6 +154,18 @@ export default function OfficerPage() {
             <CardTitle>Incentive Summary</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* Per model breakdown */}
+            {cars.filter(c => (quantities[c.id] ?? 0) > 0).map(car => (
+              <div key={car.id} className="flex justify-between text-sm">
+                <span className="text-muted-foreground">{car.name} {car.variant ?? ''}</span>
+                <span>{quantities[car.id]} car{quantities[car.id] !== 1 ? 's' : ''}</span>
+              </div>
+            ))}
+
+            {cars.filter(c => (quantities[c.id] ?? 0) > 0).length > 0 && (
+              <div className="border-t pt-2" />
+            )}
+
             <div className="flex justify-between">
               <span className="text-muted-foreground">Total Cars Sold</span>
               <span className="font-semibold">{breakdown.total_cars}</span>
