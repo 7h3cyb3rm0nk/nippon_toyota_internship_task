@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { ShoppingCart } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
@@ -50,19 +51,22 @@ export default function AdminSalesPage() {
   const rows = Object.values(grouped)
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>All Officer Sales</CardTitle>
+    <Card className="shadow-none border-border">
+      <CardHeader className="border-b border-border p-6">
+        <CardTitle className="flex items-center gap-3 text-xl font-bold tracking-tight">
+          <ShoppingCart className="size-6 text-primary" />
+          All Officer Sales
+        </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-0">
         {loading ? (
-          <p className="text-muted-foreground">Loading...</p>
+          <p className="p-6 text-muted-foreground">Loading...</p>
         ) : rows.length === 0 ? (
-          <p className="text-muted-foreground">No sales logged yet.</p>
+          <p className="p-6 text-muted-foreground">No sales logged yet.</p>
         ) : (
           <Table>
             <TableHeader>
-              <TableRow>
+              <TableRow className="hover:bg-transparent">
                 <TableHead>Officer</TableHead>
                 <TableHead>Month</TableHead>
                 <TableHead>Total Cars</TableHead>
@@ -72,13 +76,15 @@ export default function AdminSalesPage() {
             <TableBody>
               {rows.map((row, i) => (
                 <TableRow key={i}>
-                  <TableCell>{row.officer}</TableCell>
+                  <TableCell className="font-medium">{row.officer}</TableCell>
                   <TableCell>{months[row.month - 1]} {row.year}</TableCell>
-                  <TableCell>{row.total_cars}</TableCell>
+                  <TableCell className="font-bold">{row.total_cars}</TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
                       {row.models.map((m, j) => (
-                        <Badge key={j} variant="secondary">{m}</Badge>
+                        <Badge key={j} variant="secondary" className="rounded-full px-2 py-0.5 text-xs">
+                          {m}
+                        </Badge>
                       ))}
                     </div>
                   </TableCell>

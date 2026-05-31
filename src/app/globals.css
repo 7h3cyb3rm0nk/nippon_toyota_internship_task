@@ -84,37 +84,47 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --background: oklch(10% 0 0); /* Very dark charcoal/black */
+  --foreground: oklch(95% 0 0); /* Bright text */
+
+  --card: oklch(15% 0 0); /* Slightly lighter than background */
+  --card-foreground: oklch(95% 0 0);
+
+  --popover: oklch(15% 0 0);
+  --popover-foreground: oklch(95% 0 0);
+
+  --primary: oklch(50% 0.25 20); /* Vibrant red */
+  --primary-foreground: oklch(98% 0 0); /* Near white */
+
+  --secondary: oklch(20% 0 0); /* Dark grey for secondary elements */
+  --secondary-foreground: oklch(90% 0 0);
+
+  --muted: oklch(20% 0 0);
+  --muted-foreground: oklch(70% 0 0); /* Lighter grey for muted text */
+
+  --accent: oklch(55% 0.2 25); /* Complementary red/orange tone */
+  --accent-foreground: oklch(98% 0 0);
+
+  --destructive: oklch(60% 0.2 20); /* Warning red */
+  --border: oklch(25% 0 0);
+  --input: oklch(20% 0 0);
+  --ring: oklch(40% 0 0); /* A darker ring color */
+
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+
+  /* Sidebar can follow similar dark/red tones */
+  --sidebar: oklch(12% 0 0); /* Slightly darker sidebar */
+  --sidebar-foreground: oklch(90% 0 0);
+  --sidebar-primary: oklch(50% 0.25 20); /* Red for sidebar primary */
+  --sidebar-primary-foreground: oklch(98% 0 0);
+  --sidebar-accent: oklch(55% 0.2 25);
+  --sidebar-accent-foreground: oklch(98% 0 0);
+  --sidebar-border: oklch(22% 0 0);
+  --sidebar-ring: oklch(35% 0 0);
 }
 
 @layer base {
@@ -126,5 +136,14 @@
   }
   html {
     @apply font-sans;
+  }
+}
+
+@layer utilities {
+  .bg-mesh {
+    background-image: 
+      radial-gradient(circle at 70% 30%, oklch(20% 0.1 20 / 0.15), transparent 50%),
+      radial-gradient(circle at 2px 2px, oklch(25% 0 0) 1px, transparent 0);
+    background-size: 100% 100%, 32px 32px;
   }
 }

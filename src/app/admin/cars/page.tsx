@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
+import { Car, Plus, Pencil, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -24,13 +25,15 @@ export default function CarsPage() {
   const [variant, setVariant] = useState('')
   const [loading, setLoading] = useState(false)
 
-  async function fetchCars() {
+  const fetchCars = useCallback(async () => {
     const res = await fetch('/api/cars')
     const data = await res.json()
     setCars(Array.isArray(data) ? data : [])
-  }
+  }, [])
 
-  useEffect(() => { fetchCars() }, [])
+  useEffect(() => {
+    fetchCars()
+  }, [fetchCars])
 
   function openAdd() {
     setEditing(null)
@@ -70,35 +73,46 @@ export default function CarsPage() {
   }
 
   async function handleDelete(id: string) {
+    if (!confirm('Are you sure you want to delete this car?')) return
     await fetch(`/api/cars/${id}`, { method: 'DELETE' })
     fetchCars()
   }
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Car Models</CardTitle>
-        <Button onClick={openAdd}>+ Add Car</Button>
+    <Card className="shadow-none border-border">
+      <CardHeader className="flex flex-row items-center justify-between border-b border-border p-6">
+        <CardTitle className="flex items-center gap-3 text-xl font-bold tracking-tight">
+          <Car className="size-6 text-primary" />
+          Car Models
+        </CardTitle>
+        <Button onClick={openAdd} className="rounded-full gap-2">
+          <Plus className="size-4" />
+          Add Car
+        </Button>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-0">
         <Table>
           <TableHeader>
-            <TableRow>
+            <TableRow className="hover:bg-transparent">
               <TableHead>Name</TableHead>
               <TableHead>Base Suffix</TableHead>
               <TableHead>Variant</TableHead>
-              <TableHead>Actions</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {cars.map(car => (
               <TableRow key={car.id}>
-                <TableCell>{car.name}</TableCell>
+                <TableCell className="font-medium">{car.name}</TableCell>
                 <TableCell>{car.base_suffix ?? '-'}</TableCell>
                 <TableCell>{car.variant ?? '-'}</TableCell>
-                <TableCell className="flex gap-2">
-                  <Button size="sm" variant="outline" onClick={() => openEdit(car)}>Edit</Button>
-                  <Button size="sm" variant="destructive" onClick={() => handleDelete(car.id)}>Delete</Button>
+                <TableCell className="flex justify-end gap-2">
+                  <Button size="icon" variant="ghost" onClick={() => openEdit(car)}>
+                    <Pencil className="size-4 text-muted-foreground hover:text-primary" />
+                  </Button>
+                  <Button size="icon" variant="ghost" onClick={() => handleDelete(car.id)}>
+                    <Trash2 className="size-4 text-destructive" />
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}
@@ -108,7 +122,7 @@ export default function CarsPage() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editing ? 'Edit Car' : 'Add Car'}</DialogTitle>
+            <DialogTitle>{editing ? 'Edit Car' : 'Add New Car'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
@@ -124,7 +138,7 @@ export default function CarsPage() {
               <Input value={variant} onChange={e => setVariant(e.target.value)} placeholder="e.g. 7-seater" />
             </div>
             <Button className="w-full" onClick={handleSave} disabled={loading}>
-              {loading ? 'Saving...' : 'Save'}
+              {loading ? 'Saving...' : 'Save Changes'}
             </Button>
           </div>
         </DialogContent>

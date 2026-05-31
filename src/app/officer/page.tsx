@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -14,6 +14,8 @@ type Car = {
   variant: string | null
 }
 
+type SalesDataItem = { model_id: string; quantity_sold: number; };
+
 export default function OfficerPage() {
   const now = new Date()
 
@@ -26,7 +28,7 @@ export default function OfficerPage() {
   const [saved, setSaved] = useState(false)
   const [officerName, setOfficerName] = useState('')
 
-  async function fetchData() {
+  const fetchData = useCallback(async () => {
     const [carsRes, slabsRes, salesRes] = await Promise.all([
       fetch('/api/cars'),
       fetch('/api/slabs'),
@@ -34,8 +36,8 @@ export default function OfficerPage() {
     ])
 
     const carsData = await carsRes.json()
-    const slabsData = await slabsRes.json()
-    const salesData = await salesRes.json()
+    const slabsData = await slabsRes.json() // Corrected this line
+    const salesData: SalesDataItem[] = await salesRes.json() // Use specific type here
 
     setCars(carsData)
     setSlabs(slabsData)
@@ -43,7 +45,7 @@ export default function OfficerPage() {
     const q: Record<string, number> = {}
 
     carsData.forEach((c: Car) => {
-      const log = salesData.find((s: any) => s.model_id === c.id)
+      const log = salesData.find((s) => s.model_id === c.id) // 's' is now typed
       q[c.id] = log ? log.quantity_sold : 0
     })
 
@@ -67,11 +69,11 @@ export default function OfficerPage() {
         setOfficerName(profile.full_name)
       }
     }
-  }
+  }, [month, year])
 
   useEffect(() => {
     fetchData()
-  }, [month, year])
+  }, [fetchData])
 
   const entries: ModelEntry[] = cars.map(car => ({
     model_id: car.id,
@@ -132,7 +134,7 @@ export default function OfficerPage() {
 
       <div className="flex gap-4 items-center">
         <select
-          className="border rounded px-3 py-2 bg-background text-foreground"
+          className="border rounded px-3 py-2 bg-background text-foreground border-input focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 outline-none"
           value={month}
           onChange={e => setMonth(Number(e.target.value))}
         >
@@ -144,7 +146,7 @@ export default function OfficerPage() {
         </select>
 
         <select
-          className="border rounded px-3 py-2 bg-background text-foreground"
+          className="border rounded px-3 py-2 bg-background text-foreground border-input focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 outline-none"
           value={year}
           onChange={e => setYear(Number(e.target.value))}
         >
@@ -160,7 +162,7 @@ export default function OfficerPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
+        <Card className="animate-fade-in-up animate-delay-200">
           <CardHeader>
             <CardTitle>Sales Entry</CardTitle>
           </CardHeader>
@@ -176,7 +178,7 @@ export default function OfficerPage() {
                   key={car.id}
                   className="flex items-center justify-between gap-4"
                 >
-                  <span className="text-sm">
+                  <span className="text-sm text-foreground">
                     {car.name} {car.variant ?? ''}
                   </span>
 
@@ -201,7 +203,7 @@ export default function OfficerPage() {
             )}
 
             <Button
-              className="w-full mt-4"
+              className="w-full mt-4 transition-all duration-300 hover:scale-105"
               onClick={handleSave}
               disabled={saving}
             >
@@ -214,7 +216,7 @@ export default function OfficerPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="animate-fade-in-up animate-delay-300">
           <CardHeader>
             <CardTitle>Incentive Summary</CardTitle>
           </CardHeader>
@@ -225,14 +227,14 @@ export default function OfficerPage() {
               .map(model => (
                 <div
                   key={model.model_id}
-                  className="rounded-lg border p-4 space-y-2"
+                  className="rounded-lg border border-border p-4 space-y-2 bg-secondary/20"
                 >
                   <div className="flex justify-between">
-                    <span className="font-medium">
+                    <span className="font-medium text-foreground">
                       {model.model_name}
                     </span>
 
-                    <span>
+                    <span className="text-foreground">
                       {model.quantity} car
                       {model.quantity !== 1 ? 's' : ''}
                     </span>
@@ -244,7 +246,7 @@ export default function OfficerPage() {
                     </span>
 
                     {model.slab_hit ? (
-                      <Badge>
+                      <Badge className="bg-primary text-primary-foreground">
                         {model.slab_hit.min_cars}–
                         {model.slab_hit.max_cars ?? '∞'}
                       </Badge>
@@ -260,7 +262,7 @@ export default function OfficerPage() {
                       Incentive Rate
                     </span>
 
-                    <span>
+                    <span className="text-foreground">
                       ₹
                       {Number(
                         model.incentive_per_car
@@ -275,7 +277,7 @@ export default function OfficerPage() {
                       Model Incentive
                     </span>
 
-                    <span className="font-medium">
+                    <span className="font-medium text-primary">
                       ₹
                       {model.total_incentive.toLocaleString('en-IN')}
                     </span>
@@ -283,23 +285,23 @@ export default function OfficerPage() {
                 </div>
               ))}
 
-            <div className="border-t pt-4 space-y-3">
+            <div className="border-t border-border pt-4 space-y-3">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">
                   Total Cars Sold
                 </span>
 
-                <span className="font-semibold">
+                <span className="font-semibold text-foreground">
                   {breakdown.total_cars}
                 </span>
               </div>
 
               <div className="flex justify-between">
-                <span className="font-semibold">
+                <span className="font-semibold text-primary">
                   Total Payout
                 </span>
 
-                <span className="text-xl font-bold">
+                <span className="text-xl font-bold text-primary">
                   ₹
                   {breakdown.total_incentive.toLocaleString('en-IN')}
                 </span>

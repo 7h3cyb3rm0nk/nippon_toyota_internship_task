@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { Car, Lock } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -42,12 +43,15 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl text-center">Nippon Toyota</CardTitle>
+    <div className="min-h-screen flex items-center justify-center p-6 bg-mesh">
+      <Card className="w-full max-w-sm border-border shadow-lg">
+        <CardHeader className="flex flex-col items-center gap-4 p-8 pb-0">
+          <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center">
+            <Car className="size-8 text-primary" />
+          </div>
+          <CardTitle className="text-2xl font-bold tracking-tighter text-center uppercase">Nippon Toyota</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="p-8 space-y-6">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
@@ -55,7 +59,7 @@ export default function LoginPage() {
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              placeholder="you@example.com"
+              placeholder="name@company.com"
             />
           </div>
           <div className="space-y-2">
@@ -65,12 +69,13 @@ export default function LoginPage() {
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
-              placeholder="password"
+              placeholder="••••••••"
             />
           </div>
-          {error && <p className="text-sm text-red-500">{error}</p>}
-          <Button className="w-full" onClick={handleLogin} disabled={loading}>
-            {loading ? 'Signing in...' : 'Sign In'}
+          {error && <p className="text-sm font-medium text-destructive">{error}</p>}
+          <Button className="w-full rounded-full gap-2" onClick={handleLogin} disabled={loading}>
+            <Lock className="size-4" />
+            {loading ? 'Authenticating...' : 'Sign In'}
           </Button>
         </CardContent>
       </Card>
