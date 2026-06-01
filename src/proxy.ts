@@ -5,6 +5,14 @@ import { NextResponse, type NextRequest } from 'next/server'
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
+  if (pathname === "/assets/car.glb") {
+    const ua = request.headers.get("user-agent") ?? "";
+    if (/iPhone|iPad|Android/i.test(ua)) {
+      console.log("on mobile")
+      return NextResponse.rewrite(new URL("/assets/car-mobile.glb", request.url));
+    }
+    return NextResponse.next();
+  }
   const response = await updateSession(request)
 
   const supabase = createServerClient(
@@ -69,5 +77,7 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|api|.+\\.[\\w]+$).*)'],
+  matcher: [
+    '/assets/car.glb',
+    '/((?!_next/static|_next/image|favicon.ico|api|.+\\.[\\w]+$).*)'],
 }
